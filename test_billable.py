@@ -24,6 +24,22 @@ class BillableTest(unittest.TestCase):
             days.get(same_day), (interval_a.get_duration() + interval_b.get_duration())
         )
 
+    def test_group_by_tags_should_group_intervals_by_unique_tags(self):
+        interval_a = self._give_interval(tags=['meeting'])
+        interval_b = self._give_interval(tags=['r&d'])
+        interval_c = self._give_interval(tags=['coding'])
+        interval_d = self._give_interval(tags=['coding'])
+
+        intervals = billable.Intervals([interval_a, interval_b, interval_c, interval_d])
+
+        grouped_intervals = intervals.group_by_tags()
+
+        self.assertCountEqual(['meeting', 'r&d', 'coding'], grouped_intervals.keys())
+        self.assertIn(interval_c, grouped_intervals.get('coding'))
+        self.assertIn(interval_d, grouped_intervals.get('coding'))
+        self.assertEqual([interval_a], grouped_intervals.get('meeting'))
+        self.assertEqual([interval_b], grouped_intervals.get('r&d'))
+
     def _give_interval(self, day=None, tags=[]):
         if day:
             start = day.replace(hour=randint(0, 23))
