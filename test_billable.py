@@ -22,16 +22,17 @@ class BillableTest(unittest.TestCase):
         interval_a = TimeWarriorInterval(
             start_a.strftime(DT_FORMAT),
             end_a.strftime(DT_FORMAT),
-            ["A long, descriptive tag", "single-word-tag", "tag123"],
+            None,
         )
         interval_b = TimeWarriorInterval(
             start_b.strftime(DT_FORMAT),
             end_b.strftime(DT_FORMAT),
-            ["A long, descriptive tag", "single-word-tag", "tag123"],
+            None,
         )
 
         intervals = billable.Intervals([interval_a, interval_b])
         days = intervals.totals_by_days()
+
         self.assertIn(any_day.date(), days)
         self.assertEqual(
             days.get(any_day.date()),
