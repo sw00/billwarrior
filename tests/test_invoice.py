@@ -25,9 +25,21 @@ class InvoiceTest(unittest.TestCase):
 
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_as_category_string(self):
-        tag = Tag('arbitrary tag name ', [])
+        tag = Tag("arbitrary tag name ", [])
         category = ItemCategory(tag)
         self.assertEqual(category.header, tag.name.strip().capitalize())
+
+    def test_line_items_should_be_populated_with_line_items_from_tag(self):
+        intervals = (
+            tests.give_interval(),
+            tests.give_interval(),
+            tests.give_interval(),
+        )
+        tag = Tag("some tag", intervals)
+
+        category = ItemCategory(tag)
+
+        self.assertEqual(len(category.line_items), len(intervals))
 
 
 class LineItemTest(unittest.TestCase):

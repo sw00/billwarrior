@@ -7,18 +7,26 @@ class Invoice(object):
     def categories(self):
         return self.__categories
 
+
 class ItemCategory(object):
     def __init__(self, tag):
         self.__head = tag.name
+        self.__line_items = list()
+        for day, total in tag.day_totals().items():
+            self.__line_items.append(LineItem(day, total, 0))
 
     @property
     def header(self):
         return self.__head.strip().capitalize()
 
+    @property
+    def line_items(self):
+        return self.__line_items
+
 
 class LineItem(object):
     def __init__(self, day, duration, unit_price):
-        self.__day = day.date()
+        self.__day = day
         self.__duration = duration
         self.__unit_price = unit_price
 
