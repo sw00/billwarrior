@@ -1,8 +1,8 @@
 init:
-	pip install -r requirements.txt
+	pipenv install --dev
 
 test:
-	python test_billable.py
+	pipenv run py.test
 
 .PHONY:
 	init test
