@@ -11,9 +11,9 @@ class Invoice(object):
 class ItemCategory(object):
     def __init__(self, tag):
         self.__head = tag.name
-        self.__line_items = list()
-        for day, total in tag.day_totals().items():
-            self.__line_items.append(LineItem(day, total, 0))
+        self.__line_items = [
+            LineItem(day, total, 0) for day, total in tag.day_totals().items()
+        ]
 
     @property
     def header(self):
@@ -22,6 +22,16 @@ class ItemCategory(object):
     @property
     def line_items(self):
         return self.__line_items
+
+    def __str__(self):
+        return "".join(
+            [
+                "\\feetype{%s}\n" % self.header,
+                "".join(["%s\n" % item for item in self.line_items]),
+                "\\subtotal\n",
+                "%------------------------------------------------",
+            ]
+        )
 
 
 class LineItem(object):

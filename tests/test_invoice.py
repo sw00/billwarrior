@@ -41,6 +41,24 @@ class ItemCategoryTest(unittest.TestCase):
 
         self.assertEqual(len(category.line_items), len(intervals))
 
+    def test_str_should_display_header_line_items_and_subtotal_as_latex_output(self):
+        a, b = tests.give_interval(), tests.give_interval()
+        tag = Tag("category tag", [a, b])
+
+        category = ItemCategory(tag)
+
+        expected = "".join(
+            [
+                "\\feetype{%s}\n" % category.header,
+                "%s\n" % LineItem(a.get_date(), a.get_duration(), 0.0),
+                "%s\n" % LineItem(b.get_date(), b.get_duration(), 0.0),
+                "\\subtotal\n",
+                "%------------------------------------------------",
+            ]
+        )
+
+        self.assertEqual(category.__str__(), expected)
+
 
 class LineItemTest(unittest.TestCase):
     def test_date_should_display_month_day_year_correctly_in_latex(self):
