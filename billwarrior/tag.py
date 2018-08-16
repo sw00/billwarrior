@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+
+
 class Tag(object):
     def __init__(self, name, intervals):
         self._name = name
@@ -11,6 +14,10 @@ class Tag(object):
         interval.get_start().date()
         entry = self.__record_collection.get(interval.get_start().date(), [])
         entry.append(interval)
+
+    def day_totals(self):
+        return {day: sum((interval.get_duration() for interval in intervals), timedelta()) 
+                for day, intervals in self.__record_collection.items()} 
 
     def __sort_into_day_entries(self, intervals):
         for interval in intervals:

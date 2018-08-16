@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 import tests.testsupport as tests
 from billwarrior import tag
@@ -32,4 +33,19 @@ class TagTest(unittest.TestCase):
         records = coding_tag.records()
 
         self.assertIn(c, records.get(a.get_date().date()))
+
+    def test_day_totals_should_sum_interval_durations_by_day(self):
+        same_day = datetime.today()
+        a, b = (
+            tests.give_interval(same_day, tags=['coding']),
+            tests.give_interval(same_day, tags=['coding']),
+        )
+
+        coding_tag = tag.Tag('coding', [a, b])
+        records = coding_tag.day_totals()
+
+        self.assertIn(same_day.date(), records.keys())
+        self.assertEqual((a.get_duration() + b.get_duration()),
+                records.get(same_day.date()))
+
 
