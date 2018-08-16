@@ -4,7 +4,7 @@ from random import randint
 
 from timewreport.interval import TimeWarriorInterval
 
-import billable
+from billwarrior import billable
 
 DT_FORMAT = "%Y%m%dT%H%M%SZ"
 
