@@ -15,7 +15,7 @@ class ItemCategory(object):
         )
         self.line_items = [
             LineItem(day_entry.date, day_entry.total_duration(), unit_price)
-            for day_entry in list_of_day_entries
+            for day_entry in sorted(list_of_day_entries, key=lambda x: x.date)
         ]
 
     def __str__(self):

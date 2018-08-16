@@ -40,6 +40,24 @@ class ItemCategoryTest(unittest.TestCase):
 
         self.assertEqual(len(category.line_items), len(entries))
 
+    def test_line_items_should_be_sorted_by_date(self):
+        entries = [
+            DayEntry([tests.give_interval()]),
+            DayEntry([tests.give_interval()]),
+            DayEntry([tests.give_interval()]),
+        ]
+        category = ItemCategory("arbitray category", entries, 0.0)
+
+        sorted_date_list = sorted([entry.date for entry in entries])
+        print(sorted_date_list)
+        self.assertListEqual(
+            [
+                datetime.strptime(line_item.date, "%B %d, %Y").date()
+                for line_item in category.line_items
+            ],
+            sorted_date_list,
+        )
+
     def test_str_should_display_header_line_items_and_subtotal_as_latex_output(self):
         a, b = tests.give_interval(), tests.give_interval()
         entries = [DayEntry([a]), DayEntry([b])]
@@ -49,8 +67,12 @@ class ItemCategoryTest(unittest.TestCase):
         expected = "".join(
             [
                 "\\feetype{%s}\n" % category.header,
-                "%s\n" % LineItem(a.get_date(), a.get_duration(), 0.0),
-                "%s\n" % LineItem(b.get_date(), b.get_duration(), 0.0),
+                "".join(
+                    [
+                        "%s\n" % LineItem(i.get_date(), i.get_duration(), 0.0)
+                        for i in sorted([a, b], key=lambda x: x.get_date())
+                    ]
+                ),
                 "\\subtotal\n",
                 "%------------------------------------------------",
             ]
