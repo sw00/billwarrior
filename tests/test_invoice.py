@@ -38,6 +38,9 @@ class LineItemTest(unittest.TestCase):
         total = totsec//3600 + (((totsec%3600)//60)/60) + (((totsec%3600)%60)/6000)
         
         self.assertEqual(line_item.duration, '{:.2f}'.format(total))
+    
+    def test_unit_price_should_be_displayed_as_is(self):
+        unit_price = randint(0, 200) + randint(0,99) * 0.1
+        line_item = LineItem(datetime.today(), timedelta(), unit_price)
 
-
-
+        self.assertEqual(line_item.unit_price, '{:.2f}'.format(unit_price))

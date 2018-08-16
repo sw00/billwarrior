@@ -7,9 +7,10 @@ class Invoice(object):
         return self.__categories
 
 class LineItem(object):
-    def __init__(self, day, duration, rate):
+    def __init__(self, day, duration, unit_price):
         self.__day = day.date()
         self.__duration = duration
+        self.__unit_price = unit_price
 
     @property
     def date(self):
@@ -26,3 +27,6 @@ class LineItem(object):
 
         return '{:.2f}'.format(total)
 
+    @property
+    def unit_price(self):
+        return '{:.2f}'.format(self.__unit_price)
