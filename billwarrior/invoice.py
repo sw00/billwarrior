@@ -7,6 +7,9 @@ class Invoice(object):
         return self.__categories
 
 class LineItem(object):
-    pass
+    def __init__(self, day, duration, rate):
+        self.__day = day.date()
 
-
+    @property
+    def date(self):
+        return self.__day.strftime('%B %d, %Y')
