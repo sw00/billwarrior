@@ -7,6 +7,14 @@ class Invoice(object):
     def categories(self):
         return self.__categories
 
+class ItemCategory(object):
+    def __init__(self, tag):
+        self.__head = tag.name
+
+    @property
+    def header(self):
+        return self.__head.strip().capitalize()
+
 
 class LineItem(object):
     def __init__(self, day, duration, unit_price):

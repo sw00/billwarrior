@@ -3,9 +3,13 @@ from datetime import datetime, timedelta
 
 class Tag(object):
     def __init__(self, name, intervals):
-        self._name = name
+        self.__name = name
         self.__record_collection = dict()
         self.__sort_into_day_entries(intervals)
+
+    @property
+    def name(self):
+        return self.__name
 
     def records(self):
         return self.__record_collection

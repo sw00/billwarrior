@@ -5,7 +5,8 @@ from random import randint
 from timewreport.interval import TimeWarriorInterval
 
 import tests.testsupport as tests
-from billwarrior.invoice import Invoice, LineItem
+from billwarrior.invoice import Invoice, ItemCategory, LineItem
+from billwarrior.tag import Tag
 
 
 class InvoiceTest(unittest.TestCase):
@@ -20,6 +21,13 @@ class InvoiceTest(unittest.TestCase):
         categories = invoice.categories()
 
         self.assertCountEqual(["meeting", "pingpong", "coding"], categories)
+
+
+class ItemCategoryTest(unittest.TestCase):
+    def test_header_should_display_formatted_tag_as_category_string(self):
+        tag = Tag('arbitrary tag name ', [])
+        category = ItemCategory(tag)
+        self.assertEqual(category.header, tag.name.strip().capitalize())
 
 
 class LineItemTest(unittest.TestCase):
