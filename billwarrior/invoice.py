@@ -9,19 +9,12 @@ class Invoice(object):
 
 
 class ItemCategory(object):
-    def __init__(self, tag):
-        self.__head = tag.name
+    def __init__(self, tag_name, set_of_day_entries, unit_price):
+        self.header = ' '.join([x for x in tag_name.split() if not x =='']).strip().capitalize()
         self.__line_items = [
-            LineItem(day, total, 0) for day, total in tag.day_totals().items()
+            LineItem(day_entry.date, day_entry.total_duration(), unit_price) for day_entry in
+            set_of_day_entries
         ]
-
-    @property
-    def header(self):
-        return self.__head.strip().capitalize()
-
-    @property
-    def line_items(self):
-        return self.__line_items
 
     def __str__(self):
         return "".join(
