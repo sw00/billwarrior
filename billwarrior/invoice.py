@@ -9,11 +9,13 @@ class Invoice(object):
 
 
 class ItemCategory(object):
-    def __init__(self, tag_name, set_of_day_entries, unit_price):
-        self.header = ' '.join([x for x in tag_name.split() if not x =='']).strip().capitalize()
-        self.__line_items = [
-            LineItem(day_entry.date, day_entry.total_duration(), unit_price) for day_entry in
-            set_of_day_entries
+    def __init__(self, tag_name, list_of_day_entries, unit_price):
+        self.header = (
+            " ".join([x for x in tag_name.split() if not x == ""]).strip().capitalize()
+        )
+        self.line_items = [
+            LineItem(day_entry.date, day_entry.total_duration(), unit_price)
+            for day_entry in list_of_day_entries
         ]
 
     def __str__(self):

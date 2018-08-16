@@ -26,28 +26,25 @@ class InvoiceTest(unittest.TestCase):
 
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_name_as_category_string(self):
-        category = ItemCategory(' unclean tag   name ', set(), 0.0)
-        self.assertEqual(category.header, 'Unclean tag name')
+        category = ItemCategory(" unclean tag   name ", set(), 0.0)
+        self.assertEqual(category.header, "Unclean tag name")
 
-    @unittest.skip
-    def test_line_items_should_be_populated_with_line_items_from_tag(self):
-        intervals = (
-            tests.give_interval(),
-            tests.give_interval(),
-            tests.give_interval(),
-        )
-        tag = Tag("some tag", intervals)
+    def test_line_items_should_be_populated_with_day_entries(self):
+        entries = [
+            DayEntry([tests.give_interval()]),
+            DayEntry([tests.give_interval()]),
+            DayEntry([tests.give_interval()]),
+        ]
 
-        category = ItemCategory(tag)
+        category = ItemCategory("arbitray category", entries, 0.0)
 
-        self.assertEqual(len(category.line_items), len(intervals))
+        self.assertEqual(len(category.line_items), len(entries))
 
-    @unittest.skip
     def test_str_should_display_header_line_items_and_subtotal_as_latex_output(self):
         a, b = tests.give_interval(), tests.give_interval()
-        tag = Tag("category tag", [a, b])
+        entries = [DayEntry([a]), DayEntry([b])]
 
-        category = ItemCategory(tag)
+        category = ItemCategory("arbitrary category", entries, 0.0)
 
         expected = "".join(
             [
