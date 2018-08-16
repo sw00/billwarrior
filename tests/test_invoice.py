@@ -49,3 +49,16 @@ class LineItemTest(unittest.TestCase):
         line_item = LineItem(datetime.today(), timedelta(), unit_price)
 
         self.assertEqual(line_item.unit_price, "{:.2f}".format(unit_price))
+
+    def test_str_should_display_full_line_item_as_latex_output(self):
+        line_item = LineItem(
+            datetime.today(),
+            timedelta(0, randint(0, 8) * 3600),
+            randint(0, 200) + randint(0, 99) * 0.1,
+        )
+
+        self.assertEqual(
+            line_item.__str__(),
+            "\\hourrow{%s}{%s}{%s}"
+            % (line_item.date, line_item.duration, line_item.unit_price),
+        )

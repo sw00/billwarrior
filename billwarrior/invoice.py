@@ -32,3 +32,6 @@ class LineItem(object):
     @property
     def unit_price(self):
         return "{:.2f}".format(self.__unit_price)
+
+    def __str__(self):
+        return "\\hourrow{%s}{%s}{%s}" % (self.date, self.duration, self.unit_price)
