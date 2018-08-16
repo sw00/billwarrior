@@ -9,6 +9,7 @@ from billwarrior import billable
 
 
 class BillableTest(unittest.TestCase):
+
     def test_totals_by_days_should_sum_multiple_intervals_on_same_day(self):
         interval_a = tests.give_interval()
         interval_b = tests.give_interval(interval_a.get_date())
@@ -38,7 +39,3 @@ class BillableTest(unittest.TestCase):
         self.assertIn(interval_d, grouped_intervals.get("coding"))
         self.assertEqual([interval_a], grouped_intervals.get("meeting"))
         self.assertEqual([interval_b], grouped_intervals.get("r&d"))
-
-
-if __name__ == "__main__":
-    unittest.main()
