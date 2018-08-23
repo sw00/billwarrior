@@ -16,6 +16,10 @@ class Invoice(object):
                 if interval_tag in tag_categories.keys()
             ]
 
+            categories = set([tag_categories.get(tag) for tag in mapped_tag])
+            if len(categories) > 1:
+                raise ValueError("Interval has tags belonging to different categories: {}".format(mapped_tag))
+
             entries = [DayEntry([interval])]
             self.__items.append(
                 ItemCategory(tag_categories[mapped_tag.pop()], entries, 0.0)

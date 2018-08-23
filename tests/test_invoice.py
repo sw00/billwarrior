@@ -43,6 +43,18 @@ class InvoiceTest(unittest.TestCase):
         self.assertIn(str(expected_a), [str(item) for item in items])
         self.assertIn(str(expected_b), [str(item) for item in items])
 
+    def test_raises_exception_when_interval_sorts_into_more_than_one_category(self):
+        a, b = (
+            tests.give_interval(tags=["videocall", "meeting"]),
+            tests.give_interval(tags=["flight", "videocall", "other tag"]),
+        )
+
+        category_mapping = {"Consulting & Research": ["meeting", "videocall"], "Travel": ["flight"]}
+
+        with self.assertRaises(ValueError) as e:
+            invoice = Invoice([a, b], category_mapping)
+
+        self.assertEqual(str(e.exception), "Interval has tags belonging to different categories: {}".format(["flight", "videocall"]))
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_name_as_category_string(self):
         category = ItemCategory(" unclean tag   name ", set(), 0.0)
