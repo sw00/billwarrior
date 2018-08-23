@@ -11,18 +11,23 @@ from billwarrior.values import DayEntry
 
 
 class InvoiceTest(unittest.TestCase):
-    @unittest.skip
-    def test_categories_should_return_list_of_tags(self):
-        a, b, c = (
-            tests.give_interval(tags=["meeting"]),
+    def test_use_first_tag_as_category_by_default(self):
+        a, b = (
+            tests.give_interval(tags=["meeting", "cafe"]),
             tests.give_interval(tags=["pingpong"]),
-            tests.give_interval(tags=["coding"]),
         )
 
-        invoice = Invoice([a, b, c])
-        categories = invoice.categories()
+        invoice = Invoice([a, b])
+        items = invoice.items()
 
-        self.assertCountEqual(["meeting", "pingpong", "coding"], categories)
+        expected_a, expected_b = (
+            ItemCategory("meeting", [DayEntry([a])], 0.0),
+            ItemCategory("pingpong", [DayEntry([b])], 0.0),
+        )
+
+        self.assertEqual(len(items), 2)
+        self.assertIn(str(expected_a), [str(item) for item in items])
+        self.assertIn(str(expected_b), [str(item) for item in items])
 
     def test_creates_categories_from_interval_tags_and_mapping(self):
         a, b = (
@@ -49,12 +54,22 @@ class InvoiceTest(unittest.TestCase):
             tests.give_interval(tags=["flight", "videocall", "other tag"]),
         )
 
-        category_mapping = {"Consulting & Research": ["meeting", "videocall"], "Travel": ["flight"]}
+        category_mapping = {
+            "Consulting & Research": ["meeting", "videocall"],
+            "Travel": ["flight"],
+        }
 
         with self.assertRaises(ValueError) as e:
             invoice = Invoice([a, b], category_mapping)
 
-        self.assertEqual(str(e.exception), "Interval has tags belonging to different categories: {}".format(["flight", "videocall"]))
+        self.assertEqual(
+            str(e.exception),
+            "Interval has tags belonging to different categories: {}".format(
+                ["flight", "videocall"]
+            ),
+        )
+
+
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_name_as_category_string(self):
         category = ItemCategory(" unclean tag   name ", set(), 0.0)

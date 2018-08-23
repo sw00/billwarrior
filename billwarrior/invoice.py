@@ -2,11 +2,18 @@ from billwarrior.values import DayEntry
 
 
 class Invoice(object):
-    def __init__(self, intervals, category_mapping={}):
-        # inverts the mapping for many-to-one tag-category relation
-        tag_categories = {
-            tag: category for category, tags in category_mapping.items() for tag in tags
-        }
+    def __init__(self, intervals, category_mapping=None):
+        if category_mapping:
+            # inverts the mapping for many-to-one tag-category relation
+            tag_categories = {
+                tag: category
+                for category, tags in category_mapping.items()
+                for tag in tags
+            }
+        else:
+            tags = [interval.get_tags()[0] for interval in intervals]
+            tag_categories = dict(zip(tags, tags))
+
         self.__items = []
 
         for interval in intervals:
@@ -18,7 +25,11 @@ class Invoice(object):
 
             categories = set([tag_categories.get(tag) for tag in mapped_tag])
             if len(categories) > 1:
-                raise ValueError("Interval has tags belonging to different categories: {}".format(mapped_tag))
+                raise ValueError(
+                    "Interval has tags belonging to different categories: {}".format(
+                        mapped_tag
+                    )
+                )
 
             entries = [DayEntry([interval])]
             self.__items.append(
