@@ -11,6 +11,7 @@ from billwarrior.values import DayEntry
 
 
 class InvoiceTest(unittest.TestCase):
+    @unittest.skip
     def test_categories_should_return_list_of_tags(self):
         a, b, c = (
             tests.give_interval(tags=["meeting"]),
@@ -23,6 +24,24 @@ class InvoiceTest(unittest.TestCase):
 
         self.assertCountEqual(["meeting", "pingpong", "coding"], categories)
 
+    def test_creates_categories_from_interval_tags_and_mapping(self):
+        a, b = (
+            tests.give_interval(tags=["videocall", "meeting"]),
+            tests.give_interval(tags=["flight", "nyc"]),
+        )
+
+        category_mapping = {"Consulting & Research": ["meeting"], "Travel": ["flight"]}
+        invoice = Invoice([a, b], category_mapping)
+        items = invoice.items()
+
+        expected_a, expected_b = (
+            ItemCategory("Consulting & Research", [DayEntry([a])], 0.0),
+            ItemCategory("Travel", [DayEntry([b])], 0.0),
+        )
+
+        self.assertEqual(len(items), 2)
+        self.assertIn(str(expected_a), [str(item) for item in items])
+        self.assertIn(str(expected_b), [str(item) for item in items])
 
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_name_as_category_string(self):

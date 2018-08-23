@@ -1,8 +1,32 @@
+from billwarrior.values import DayEntry
+
+
 class Invoice(object):
-    def __init__(self, intervals):
+    def __init__(self, intervals, category_mapping={}):
+        # inverts the mapping for many-to-one tag-category relation
+        tag_categories = {
+            tag: category for category, tags in category_mapping.items() for tag in tags
+        }
+        self.__items = []
+
+        for interval in intervals:
+            mapped_tag = [
+                interval_tag
+                for interval_tag in interval.get_tags()
+                if interval_tag in tag_categories.keys()
+            ]
+
+            entries = [DayEntry([interval])]
+            self.__items.append(
+                ItemCategory(tag_categories[mapped_tag.pop()], entries, 0.0)
+            )
+
         self.__categories = [
             tag for interval in intervals for tag in interval.get_tags()
         ]
+
+    def items(self):
+        return self.__items
 
     def categories(self):
         return self.__categories
