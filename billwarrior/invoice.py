@@ -2,7 +2,7 @@ from billwarrior.values import DayEntry
 
 
 class Invoice(object):
-    def __init__(self, intervals, category_mapping=None):
+    def __init__(self, intervals, category_mapping=None, category_prices={}):
         if category_mapping:
             # inverts the mapping for many-to-one tag-category relation
             tag_categories = {
@@ -31,9 +31,19 @@ class Invoice(object):
                     )
                 )
 
+            if len(categories) == 0:
+                raise ValueError(
+                    "Interval doesn't belong to any category: {}".format(interval)
+                )
+
             entries = [DayEntry([interval])]
+            current_category = tag_categories[mapped_tag.pop()]
             self.__items.append(
-                ItemCategory(tag_categories[mapped_tag.pop()], entries, 0.0)
+                ItemCategory(
+                    current_category,
+                    entries,
+                    category_prices.get(current_category, 0.0),
+                )
             )
 
         self.__categories = [
@@ -42,9 +52,6 @@ class Invoice(object):
 
     def items(self):
         return self.__items
-
-    def categories(self):
-        return self.__categories
 
 
 class ItemCategory(object):

@@ -69,6 +69,47 @@ class InvoiceTest(unittest.TestCase):
             ),
         )
 
+    def test_raises_exception_when_an_interval_does_not_belong_to_any_category(self):
+        a, b = (
+            tests.give_interval(tags=["meeting"]),
+            tests.give_interval(tags=["coding", "stories"]),
+        )
+
+        category_mapping = {"Travel": ["flight"], "Software Development": ["coding"]}
+
+        with self.assertRaises(ValueError) as e:
+            invoice = Invoice([a, b], category_mapping)
+
+        self.assertEqual(
+            str(e.exception), "Interval doesn't belong to any category: {}".format(a)
+        )
+
+    def test_sets_unit_price_for_item_category(self):
+        a, b = (
+            tests.give_interval(tags=["meeting"]),
+            tests.give_interval(tags=["coding", "stories"]),
+        )
+
+        category_mapping = {
+            "Consulting & Research": ["meeting"],
+            "Software Development": ["coding"],
+        }
+        invoice = Invoice(
+            [a, b],
+            category_mapping,
+            {"Consulting & Research": 9.34, "Software Development": 12.02},
+        )
+        items = invoice.items()
+
+        expected_a, expected_b = (
+            ItemCategory("Consulting & Research", [DayEntry([a])], 9.34),
+            ItemCategory("Software Development", [DayEntry([b])], 12.02),
+        )
+
+        self.assertEqual(len(items), 2)
+        self.assertIn(str(expected_a), [str(item) for item in items])
+        self.assertIn(str(expected_b), [str(item) for item in items])
+
 
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_name_as_category_string(self):
