@@ -23,4 +23,5 @@ setup(name='billwarrior',
       license='GPLv3',
       packages=['billwarrior'],
       install_requires=['timew-report==1.0.2'],
+      scripts=['bin/billwarrior'],
       zip_safe=False)
