@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime, timedelta
 
 import tests.testsupport as tests
-from billwarrior.values import DayEntry
+from billwarrior.records import DayEntry
 
 
 class DayTest(unittest.TestCase):

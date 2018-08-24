@@ -6,7 +6,7 @@ from timewreport.interval import TimeWarriorInterval
 
 import tests.testsupport as tests
 from billwarrior.invoice import Invoice, ItemCategory, LineItem
-from billwarrior.values import DayEntry
+from billwarrior.records import DayEntry
 
 
 class InvoiceTest(unittest.TestCase):

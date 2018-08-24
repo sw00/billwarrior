@@ -1,4 +1,4 @@
-from billwarrior.values import DayEntry
+from billwarrior.records import DayEntry
 
 
 class Invoice(object):
