@@ -60,7 +60,7 @@ class InvoiceTest(unittest.TestCase):
         }
 
         with self.assertRaises(ValueError) as e:
-            invoice = Invoice([a, b], category_mapping)
+            Invoice([a, b], category_mapping)
 
         self.assertEqual(
             str(e.exception),
@@ -78,7 +78,7 @@ class InvoiceTest(unittest.TestCase):
         category_mapping = {"Travel": ["flight"], "Software Development": ["coding"]}
 
         with self.assertRaises(ValueError) as e:
-            invoice = Invoice([a, b], category_mapping)
+            Invoice([a, b], category_mapping)
 
         self.assertEqual(
             str(e.exception), "Interval doesn't belong to any category: {}".format(a)
@@ -109,6 +109,24 @@ class InvoiceTest(unittest.TestCase):
         self.assertEqual(len(items), 2)
         self.assertIn(str(expected_a), [str(item) for item in items])
         self.assertIn(str(expected_b), [str(item) for item in items])
+
+    def test_prints_invoice_categories_and_items(self):
+        a, b = (
+            tests.give_interval(tags=["meeting"]),
+            tests.give_interval(tags=["coding", "stories"]),
+        )
+        category_mapping = {
+            "Consulting & Research": ["meeting"],
+            "Software Development": ["coding"],
+        }
+        expected_a, expected_b = (
+            ItemCategory("Consulting & Research", [DayEntry([a])], 9.34),
+            ItemCategory("Software Development", [DayEntry([b])], 12.02),
+        )
+
+        invoice = Invoice([a, b], category_mapping, {"Consulting & Research": 9.34, "Software Development": 12.02})
+
+        self.assertEqual(str(invoice), '\n'.join([str(expected_a),str(expected_b)]))
 
 
 class ItemCategoryTest(unittest.TestCase):

@@ -46,12 +46,11 @@ class Invoice(object):
                 )
             )
 
-        self.__categories = [
-            tag for interval in intervals for tag in interval.get_tags()
-        ]
-
     def items(self):
         return self.__items
+    
+    def __str__(self):
+        return '\n'.join([str(item) for item in self.__items])
 
 
 class ItemCategory(object):
