@@ -50,3 +50,19 @@ class BillWarriorConfigTest(unittest.TestCase):
 
         for category_name, category_text in expected.items():
             self.assertEqual(config.text_for(category_name), category_text)
+
+    def test_rate_should_return_configured_rate_for_category(self):
+        with patch(
+            "builtins.open", mock_open(read_data=self.raw_file_data)
+        ) as mocked_open:
+            config = BillWarriorConfig()
+
+        expected = {
+            "billable": 43.50,
+            "expensed": 21.75,
+            "nonbillable": 0.0,
+        }
+
+        for category_name, category_rate in expected.items():
+            self.assertEqual(config.rate_for(category_name), category_rate)
+

@@ -22,4 +22,7 @@ class BillWarriorConfig(object):
         return self.__categories
 
     def text_for(self, category_name):
-        return self.parser["categories"]["{}.text".format(category_name)]
+        return self.parser["categories"].get("{}.text".format(category_name))
+
+    def rate_for(self, category_name):
+        return self.parser["categories"].getfloat("{}.rate".format(category_name))
