@@ -77,5 +77,3 @@ class BillWarriorConfigTest(unittest.TestCase):
         for category_name, tags in expected.items():
             for tag in tags:
                 self.assertEqual(config.category_of(tag), category_name)
-
-
