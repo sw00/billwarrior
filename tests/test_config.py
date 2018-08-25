@@ -15,7 +15,7 @@ class BillWarriorConfigTest(unittest.TestCase):
             "\nbillable.text = Software Engineering & Consulting"
             "\nbillable.rate = 43.50"
             "\nexpensed.tags = travel, flight, train"
-            "\nexpensed.text = Rebate"
+            "\nexpensed.text = Discounted Travel Time"
             "\nexpensed.rate = 21.75"
             "\nnonbillable.tags = pingpong, lunch"
             "\nnonbillable.text = Miscellaneous activities"
@@ -28,8 +28,25 @@ class BillWarriorConfigTest(unittest.TestCase):
         )
         expected_categories = ["billable", "expensed", "nonbillable"]
 
-        with patch("builtins.open", mock_open(read_data=self.raw_file_data)) as mocked_open:
+        with patch(
+            "builtins.open", mock_open(read_data=self.raw_file_data)
+        ) as mocked_open:
             config = BillWarriorConfig()
 
         mocked_open.assert_called_once_with(file_path, "r")
         self.assertCountEqual(expected_categories, config.categories)
+
+    def test_text_should_return_configured_text_for_category(self):
+        with patch(
+            "builtins.open", mock_open(read_data=self.raw_file_data)
+        ) as mocked_open:
+            config = BillWarriorConfig()
+
+        expected = {
+            "billable": "Software Engineering & Consulting",
+            "expensed": "Discounted Travel Time",
+            "nonbillable": "Miscellaneous activities",
+        }
+
+        for category_name, category_text in expected.items():
+            self.assertEqual(config.text_for(category_name), category_text)

@@ -8,16 +8,18 @@ INI_FILE_PATH = os.path.join(
 
 class BillWarriorConfig(object):
     def __init__(self):
-        parser = configparser.ConfigParser()
-        parser.read(INI_FILE_PATH)
+        self.parser = configparser.ConfigParser()
 
         with open(INI_FILE_PATH, "r") as f:
-            parser.read_string(f.read())
+            self.parser.read_string(f.read())
 
         self.__categories = set(
-            [option.split(".")[0] for option in parser.options("categories")]
+            [option.split(".")[0] for option in self.parser.options("categories")]
         )
 
     @property
     def categories(self):
         return self.__categories
+
+    def text_for(self, category_name):
+        return self.parser["categories"]["{}.text".format(category_name)]
