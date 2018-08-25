@@ -26,3 +26,10 @@ class BillWarriorConfig(object):
 
     def rate_for(self, category_name):
         return self.parser["categories"].getfloat("{}.rate".format(category_name))
+
+    def category_of(self, tag_name):
+        for category in self.__categories:
+            category_tags = self.parser["categories"].get("{}.tags".format(category))
+            tags = [t.replace(",", "").strip() for t in category_tags.split(",")]
+            if tag_name in tags:
+                return category

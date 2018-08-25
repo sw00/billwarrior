@@ -57,12 +57,25 @@ class BillWarriorConfigTest(unittest.TestCase):
         ) as mocked_open:
             config = BillWarriorConfig()
 
-        expected = {
-            "billable": 43.50,
-            "expensed": 21.75,
-            "nonbillable": 0.0,
-        }
+        expected = {"billable": 43.50, "expensed": 21.75, "nonbillable": 0.0}
 
         for category_name, category_rate in expected.items():
             self.assertEqual(config.rate_for(category_name), category_rate)
+
+    def test_category_of_should_return_category_that_tag_belongs_to(self):
+        with patch(
+            "builtins.open", mock_open(read_data=self.raw_file_data)
+        ) as mocked_open:
+            config = BillWarriorConfig()
+
+        expected = {
+            "billable": ["coding", "research", "meeting"],
+            "expensed": ["travel", "flight", "train"],
+            "nonbillable": ["pingpong", "lunch"],
+        }
+
+        for category_name, tags in expected.items():
+            for tag in tags:
+                self.assertEqual(config.category_of(tag), category_name)
+
 
