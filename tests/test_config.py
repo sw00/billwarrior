@@ -2,8 +2,6 @@ import os
 import unittest
 from unittest.mock import mock_open, patch
 
-import pytest
-
 from billwarrior.config import BillWarriorConfig
 
 
