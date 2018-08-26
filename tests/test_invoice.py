@@ -1,14 +1,14 @@
 import unittest
-from unittest import mock
 from datetime import datetime, timedelta
 from random import randint
+from unittest import mock
 
 from timewreport.interval import TimeWarriorInterval
 
 import tests.testsupport as tests
+from billwarrior.config import BillWarriorConfig
 from billwarrior.invoice import Invoice, ItemCategory, LineItem
 from billwarrior.records import DayEntry
-from billwarrior.config import BillWarriorConfig
 
 
 class BillWarriorConfigFake(BillWarriorConfig):
@@ -43,20 +43,28 @@ class InvoiceTest(unittest.TestCase):
         self.assertIn(str(expected_a), [str(item) for item in items])
         self.assertIn(str(expected_b), [str(item) for item in items])
 
-    @unittest.skip
     def test_raises_exception_when_interval_sorts_into_more_than_one_category(self):
         a, b = (
             tests.give_interval(tags=["videocall", "meeting"]),
             tests.give_interval(tags=["flight", "videocall", "other tag"]),
         )
 
-        category_mapping = {
-            "Consulting & Research": ["meeting", "videocall"],
-            "Travel": ["flight"],
-        }
+        def fake_category_of(tag):
+            category_a = "Consulting & Research"
+            category_b = "Travel"
+            category_mapping = {
+                "meeting": category_a,
+                "videocall": category_a,
+                "flight": category_b ,
+            }
+            return category_mapping.get(tag, None)
+
+        billw_config = BillWarriorConfigFake()
+        billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
+        billw_config.rate_for = mock.MagicMock(return_value=0.0)
 
         with self.assertRaises(ValueError) as e:
-            Invoice([a, b], category_mapping)
+            Invoice([a, b], billw_config)
 
         self.assertEqual(
             str(e.exception),

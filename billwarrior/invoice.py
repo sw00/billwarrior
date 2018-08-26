@@ -6,17 +6,19 @@ class Invoice(object):
         self.__items = []
 
         for interval in intervals:
-            mapped_tag = [
-                interval_tag
-                for interval_tag in interval.get_tags()
-                if config.category_of(interval_tag)
-            ]
+            tag_mapping = {tag: config.category_of(tag) for tag in interval.get_tags()}
 
-            categories = set([config.category_of(tag) for tag in mapped_tag])
+            categories = set(
+                [category for category in tag_mapping.values() if category]
+            )
             if len(categories) > 1:
                 raise ValueError(
                     "Interval has tags belonging to different categories: {}".format(
-                        mapped_tag
+                        [
+                            tag
+                            for tag in tag_mapping.keys()
+                            if tag_mapping.get(tag, None)
+                        ]
                     )
                 )
 
@@ -26,20 +28,18 @@ class Invoice(object):
                 )
 
             entries = [DayEntry([interval])]
-            current_category = config.category_of(mapped_tag.pop())
+            current_category = categories.pop()
             self.__items.append(
                 ItemCategory(
-                    current_category,
-                    entries,
-                    config.rate_for(current_category),
+                    current_category, entries, config.rate_for(current_category)
                 )
             )
 
     def items(self):
         return self.__items
-    
+
     def __str__(self):
-        return '\n'.join([str(item) for item in self.__items])
+        return "\n".join([str(item) for item in self.__items])
 
 
 class ItemCategory(object):
