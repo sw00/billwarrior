@@ -11,6 +11,7 @@ class Invoice(object):
             categories = set(
                 [category for category in tag_mapping.values() if category]
             )
+
             if len(categories) > 1:
                 raise ValueError(
                     "Interval has tags belonging to different categories: {}".format(

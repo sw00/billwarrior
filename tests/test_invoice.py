@@ -24,8 +24,9 @@ class InvoiceTest(unittest.TestCase):
         )
 
         def fake_category_of(tag):
-            mocked_mapping = {"meeting": "Consulting & Research", "flight": "Travel"}
-            return mocked_mapping.get(tag, None)
+            return {"meeting": "Consulting & Research", "flight": "Travel"}.get(
+                tag, None
+            )
 
         billw_config = BillWarriorConfigFake()
         billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
@@ -55,7 +56,7 @@ class InvoiceTest(unittest.TestCase):
             category_mapping = {
                 "meeting": category_a,
                 "videocall": category_a,
-                "flight": category_b ,
+                "flight": category_b,
             }
             return category_mapping.get(tag, None)
 
@@ -73,17 +74,21 @@ class InvoiceTest(unittest.TestCase):
             ),
         )
 
-    @unittest.skip
     def test_raises_exception_when_an_interval_does_not_belong_to_any_category(self):
         a, b = (
             tests.give_interval(tags=["meeting"]),
             tests.give_interval(tags=["coding", "stories"]),
         )
 
-        category_mapping = {"Travel": ["flight"], "Software Development": ["coding"]}
+        def fake_category_of(tag):
+            return {"flight": "Travel", "coding": "Software Development"}.get(tag, None)
+
+        billw_config = BillWarriorConfigFake()
+        billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
+        billw_config.rate_for = mock.MagicMock(return_value=0.0)
 
         with self.assertRaises(ValueError) as e:
-            Invoice([a, b], category_mapping)
+            Invoice([a, b], billw_config)
 
         self.assertEqual(
             str(e.exception), "Interval doesn't belong to any category: {}".format(a)
