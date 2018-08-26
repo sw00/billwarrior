@@ -15,6 +15,20 @@ class BillWarriorConfigFake(BillWarriorConfig):
     def __init__(self):
         pass
 
+    @classmethod
+    def build(cls, tag_mapping={}, rate_mapping={}):
+        def fake_category_of(tag):
+            return tag_mapping.get(tag, None)
+
+        def fake_rate_for(category):
+            return rate_mapping.get(category, 0.0)
+
+        billw_config = cls()
+        billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
+        billw_config.rate_for = mock.MagicMock(side_effect=fake_rate_for)
+
+        return billw_config
+
 
 class InvoiceTest(unittest.TestCase):
     def test_creates_categories_from_interval_tags_and_mapping(self):
@@ -23,14 +37,9 @@ class InvoiceTest(unittest.TestCase):
             tests.give_interval(tags=["flight", "nyc"]),
         )
 
-        def fake_category_of(tag):
-            return {"meeting": "Consulting & Research", "flight": "Travel"}.get(
-                tag, None
-            )
-
-        billw_config = BillWarriorConfigFake()
-        billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
-        billw_config.rate_for = mock.MagicMock(return_value=0.0)
+        billw_config = BillWarriorConfigFake.build(
+            {"meeting": "Consulting & Research", "flight": "Travel"}
+        )
 
         invoice = Invoice([a, b], billw_config)
         items = invoice.items()
@@ -50,19 +59,14 @@ class InvoiceTest(unittest.TestCase):
             tests.give_interval(tags=["flight", "videocall", "other tag"]),
         )
 
-        def fake_category_of(tag):
-            category_a = "Consulting & Research"
-            category_b = "Travel"
-            category_mapping = {
-                "meeting": category_a,
-                "videocall": category_a,
-                "flight": category_b,
-            }
-            return category_mapping.get(tag, None)
+        a_category = "Consulting & Research"
+        tag_mapping = {
+            "meeting": a_category,
+            "videocall": a_category,
+            "flight": "Travel",
+        }
 
-        billw_config = BillWarriorConfigFake()
-        billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
-        billw_config.rate_for = mock.MagicMock(return_value=0.0)
+        billw_config = BillWarriorConfigFake.build(tag_mapping)
 
         with self.assertRaises(ValueError) as e:
             Invoice([a, b], billw_config)
@@ -80,12 +84,9 @@ class InvoiceTest(unittest.TestCase):
             tests.give_interval(tags=["coding", "stories"]),
         )
 
-        def fake_category_of(tag):
-            return {"flight": "Travel", "coding": "Software Development"}.get(tag, None)
-
-        billw_config = BillWarriorConfigFake()
-        billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
-        billw_config.rate_for = mock.MagicMock(return_value=0.0)
+        billw_config = BillWarriorConfigFake.build(
+            {"flight": "Travel", "coding": "Software Development"}
+        )
 
         with self.assertRaises(ValueError) as e:
             Invoice([a, b], billw_config)
