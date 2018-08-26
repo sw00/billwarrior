@@ -28,3 +28,31 @@ class DayTest(unittest.TestCase):
         day_entry = DayEntry([interval])
 
         self.assertEqual(day_entry.date, interval.get_date().date())
+
+    def test_add_should_raise_exception_when_interval_has_different_day(self):
+        interval = tests.give_interval()
+        day_entry = DayEntry([interval])
+
+        new_interval = tests.give_interval(interval.get_date() + timedelta(days=2))
+
+        with self.assertRaises(ValueError) as e:
+            day_entry.add(new_interval)
+
+        self.assertEqual(
+            str(e.exception),
+            "Can't add interval with different date than DayEntry({}): {}".format(
+                day_entry.date, new_interval.get_date().date()
+            ),
+        )
+
+    def test_add_should_add_interval_when_interval_has_same_day(self):
+        interval = tests.give_interval()
+        day_entry = DayEntry([interval])
+
+        duration_a = day_entry.total_duration()
+
+        new_interval = tests.give_interval(interval.get_date())
+        day_entry.add(new_interval)
+
+        self.assertEqual(day_entry.total_duration(), duration_a + new_interval.get_duration())
+
