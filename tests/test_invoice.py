@@ -129,26 +129,33 @@ class InvoiceTest(unittest.TestCase):
         self.assertIn(str(expected_a), [str(item) for item in items])
         self.assertIn(str(expected_b), [str(item) for item in items])
 
-    @unittest.skip
     def test_prints_invoice_categories_and_items(self):
         a, b = (
             tests.give_interval(tags=["meeting"]),
             tests.give_interval(tags=["coding", "stories"]),
         )
-        category_mapping = {
-            "Consulting & Research": ["meeting"],
-            "Software Development": ["coding"],
-        }
+
+        category_a = "Consulting & Research"
+        category_b = "Software Development"
+
+        billw_config = BillWarriorConfigFake.build(
+            {"meeting": category_a, "coding": category_b},
+            {category_a: 9.34, category_b: 12.02},
+        )
         expected_a, expected_b = (
-            ItemCategory("Consulting & Research", [DayEntry([a])], 9.34),
-            ItemCategory("Software Development", [DayEntry([b])], 12.02),
+            ItemCategory(
+                "Consulting & Research",
+                [DayEntry([a])],
+                billw_config.rate_for(category_a),
+            ),
+            ItemCategory(
+                "Software Development",
+                [DayEntry([b])],
+                billw_config.rate_for(category_b),
+            ),
         )
 
-        invoice = Invoice(
-            [a, b],
-            category_mapping,
-            {"Consulting & Research": 9.34, "Software Development": 12.02},
-        )
+        invoice = Invoice([a, b], billw_config)
 
         self.assertEqual(str(invoice), "\n".join([str(expected_a), str(expected_b)]))
 
