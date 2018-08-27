@@ -1,18 +1,24 @@
-from billwarrior.records import DayEntry
+from datetime import timedelta
 
 
 class Invoice(object):
     def __init__(self, intervals, config):
         self.__items = []
 
+        intervals_by_category = {}
         for interval in intervals:
             tag_mapping = {tag: config.category_of(tag) for tag in interval.get_tags()}
 
-            categories = set(
+            interval_categories = set(
                 [category for category in tag_mapping.values() if category]
             )
 
-            if len(categories) > 1:
+            if len(interval_categories) == 0:
+                raise ValueError(
+                    "Interval doesn't belong to any category: {}".format(interval)
+                )
+
+            if len(interval_categories) > 1:
                 raise ValueError(
                     "Interval has tags belonging to different categories: {}".format(
                         [
@@ -23,17 +29,21 @@ class Invoice(object):
                     )
                 )
 
-            if len(categories) == 0:
-                raise ValueError(
-                    "Interval doesn't belong to any category: {}".format(interval)
-                )
+            this_category = interval_categories.pop()
+            category_entry = intervals_by_category.get(this_category, [])
+            category_entry.append(interval)
+            intervals_by_category[this_category] = category_entry
 
-            entries = [DayEntry([interval])]
-            current_category = categories.pop()
+        for category, intervals in intervals_by_category.items():
+            intervals_by_day = {}
+
+            for interval in intervals:
+                day_entry = intervals_by_day.get(interval.get_date().date(), [])
+                day_entry.append(interval)
+                intervals_by_day[interval.get_date().date()] = day_entry
+
             self.__items.append(
-                ItemCategory(
-                    current_category, entries, config.rate_for(current_category)
-                )
+                ItemCategory(category, intervals_by_day, config.rate_for(category))
             )
 
     def items(self):
@@ -44,14 +54,15 @@ class Invoice(object):
 
 
 class ItemCategory(object):
-    def __init__(self, tag_name, list_of_day_entries, unit_price):
+    def __init__(self, tag_name, intervals_by_day, unit_price):
         self.header = (
             " ".join([x for x in tag_name.split() if not x == ""]).strip().capitalize()
         )
-        self.line_items = [
-            LineItem(day_entry.date, day_entry.total_duration(), unit_price)
-            for day_entry in sorted(list_of_day_entries, key=lambda x: x.date)
-        ]
+        self.line_items = []
+
+        for day, intervals in sorted(intervals_by_day.items(), key=lambda x: x[0]):
+            self.line_items.append(LineItem(day, sum([interval.get_duration() for interval
+                in intervals], timedelta()), unit_price))
 
     def __str__(self):
         return "".join(

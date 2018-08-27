@@ -31,7 +31,7 @@ class BillWarriorConfigFake(BillWarriorConfig):
 
 
 class InvoiceTest(unittest.TestCase):
-    def test_creates_categories_from_interval_tags_and_mapping(self):
+    def test_creates_different_categories_from_interval_tags_and_mapping(self):
         a, b = (
             tests.give_interval(tags=["videocall", "meeting"]),
             tests.give_interval(tags=["flight", "nyc"]),
@@ -45,13 +45,39 @@ class InvoiceTest(unittest.TestCase):
         items = invoice.items()
 
         expected_a, expected_b = (
-            ItemCategory("Consulting & Research", [DayEntry([a])], 0.0),
-            ItemCategory("Travel", [DayEntry([b])], 0.0),
+            ItemCategory(
+                "Consulting & Research",
+                {a.get_date().date(): [a]},
+                0.0,
+            ),
+            ItemCategory("Travel", {b.get_date().date(): [b]}, 0.0),
         )
 
         self.assertEqual(len(items), 2)
         self.assertIn(str(expected_a), [str(item) for item in items])
         self.assertIn(str(expected_b), [str(item) for item in items])
+
+    def test_groups_intervals_of_same_category(self):
+        same_day = datetime.today()
+        a, b, c = (
+            tests.give_interval(same_day, tags=["on-site", "coding"]),
+            tests.give_interval(same_day, tags=["coding", "off-site"]),
+            tests.give_interval(tags=["coding", "cafe"]),
+        )
+
+        billw_config = BillWarriorConfigFake.build({"coding": "Consulting & Research"})
+
+        invoice = Invoice([a, b, c], billw_config)
+        items = invoice.items()
+
+        expected = ItemCategory(
+            "Consulting & Research",
+            {same_day.date(): [a, b], c.get_date().date(): [c]},
+            0.0,
+        )
+
+        self.assertEqual(len(items), 1)  # one category
+        self.assertEqual(str(items[0]), str(expected))
 
     def test_raises_exception_when_interval_sorts_into_more_than_one_category(self):
         a, b = (
@@ -115,12 +141,12 @@ class InvoiceTest(unittest.TestCase):
         expected_a, expected_b = (
             ItemCategory(
                 "Consulting & Research",
-                [DayEntry([a])],
+                {a.get_date().date(): [a]},
                 billw_config.rate_for(category_a),
             ),
             ItemCategory(
                 "Software Development",
-                [DayEntry([b])],
+                {b.get_date().date(): [b]},
                 billw_config.rate_for(category_b),
             ),
         )
@@ -145,12 +171,12 @@ class InvoiceTest(unittest.TestCase):
         expected_a, expected_b = (
             ItemCategory(
                 "Consulting & Research",
-                [DayEntry([a])],
+                {a.get_date().date(): [a]},
                 billw_config.rate_for(category_a),
             ),
             ItemCategory(
                 "Software Development",
-                [DayEntry([b])],
+                {b.get_date().date(): [b]},
                 billw_config.rate_for(category_b),
             ),
         )
@@ -162,30 +188,32 @@ class InvoiceTest(unittest.TestCase):
 
 class ItemCategoryTest(unittest.TestCase):
     def test_header_should_display_formatted_tag_name_as_category_string(self):
-        category = ItemCategory(" unclean tag   name ", set(), 0.0)
+        category = ItemCategory(" unclean tag   name ", {}, 0.0)
         self.assertEqual(category.header, "Unclean tag name")
 
-    def test_line_items_should_be_populated_with_day_entries(self):
+    def test_line_items_should_be_populated_with_entries_per_day(self):
         entries = [
-            DayEntry([tests.give_interval()]),
-            DayEntry([tests.give_interval()]),
-            DayEntry([tests.give_interval()]),
+            [tests.give_interval()],
+            [tests.give_interval()],
+            [tests.give_interval()],
         ]
+        intervals_by_day = {entry[0].get_date().date(): entry for entry in entries}
 
-        category = ItemCategory("arbitray category", entries, 0.0)
+        category = ItemCategory("arbitray category", intervals_by_day, 0.0)
 
         self.assertEqual(len(category.line_items), len(entries))
 
     def test_line_items_should_be_sorted_by_date(self):
         entries = [
-            DayEntry([tests.give_interval()]),
-            DayEntry([tests.give_interval()]),
-            DayEntry([tests.give_interval()]),
+            [tests.give_interval()],
+            [tests.give_interval()],
+            [tests.give_interval()],
         ]
-        category = ItemCategory("arbitray category", entries, 0.0)
+        dates = [entry[0].get_date().date() for entry in entries]
 
-        sorted_date_list = sorted([entry.date for entry in entries])
-        print(sorted_date_list)
+        category = ItemCategory("arbitray category", dict(zip(dates, entries)), 0.0)
+
+        sorted_date_list = sorted([entry[0].get_date().date() for entry in entries])
         self.assertListEqual(
             [
                 datetime.strptime(line_item.date, "%B %d, %Y").date()
@@ -196,7 +224,7 @@ class ItemCategoryTest(unittest.TestCase):
 
     def test_str_should_display_header_line_items_and_subtotal_as_latex_output(self):
         a, b = tests.give_interval(), tests.give_interval()
-        entries = [DayEntry([a]), DayEntry([b])]
+        entries = {a.get_date().date(): [a], b.get_date().date(): [b]}
 
         category = ItemCategory("arbitrary category", entries, 0.0)
 
