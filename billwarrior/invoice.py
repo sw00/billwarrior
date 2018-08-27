@@ -3,48 +3,56 @@ from datetime import timedelta
 
 class Invoice(object):
     def __init__(self, intervals, config):
+        self.config = config
         self.__items = []
 
-        intervals_by_category = {}
-        for interval in intervals:
-            tag_mapping = {tag: config.category_of(tag) for tag in interval.get_tags()}
+        sorted_intervals = self._sort_by_category(intervals)
 
-            interval_categories = set(
-                [category for category in tag_mapping.values() if category]
-            )
-
-            if len(interval_categories) == 0:
-                raise ValueError(
-                    "Interval doesn't belong to any category: {}".format(interval)
-                )
-
-            if len(interval_categories) > 1:
-                raise ValueError(
-                    "Interval has tags belonging to different categories: {}".format(
-                        [
-                            tag
-                            for tag in tag_mapping.keys()
-                            if tag_mapping.get(tag, None)
-                        ]
-                    )
-                )
-
-            this_category = interval_categories.pop()
-            category_entry = intervals_by_category.get(this_category, [])
-            category_entry.append(interval)
-            intervals_by_category[this_category] = category_entry
-
-        for category, intervals in intervals_by_category.items():
-            intervals_by_day = {}
-
-            for interval in intervals:
-                day_entry = intervals_by_day.get(interval.get_date().date(), [])
-                day_entry.append(interval)
-                intervals_by_day[interval.get_date().date()] = day_entry
+        for category, intervals in sorted_intervals.items():
+            days = set([interval.get_date().date() for interval in intervals])
+            intervals_by_day = {
+                day: [i for i in intervals if i.get_date().date() == day]
+                for day in days
+            }
 
             self.__items.append(
                 ItemCategory(category, intervals_by_day, config.rate_for(category))
             )
+
+    def _sort_by_category(self, list_of_intervals):
+        tags = set(
+            [tag for interval in list_of_intervals for tag in interval.get_tags()]
+        )
+        tag_mapping = {t: self.config.category_of(t) for t in tags}
+        all_categories = set([c for c in tag_mapping.values()])
+
+        interval_categories = {
+            i.__repr__(): set(
+                [tag_mapping[t] for t in i.get_tags() if tag_mapping.get(t, None)]
+            )
+            for i in list_of_intervals
+        }
+
+        no_category_list = [i for i, c in interval_categories.items() if len(c) == 0]
+        ambiguous_list = [i for i, c in interval_categories.items() if len(c) > 1]
+
+        if len(no_category_list) > 0:
+            raise ValueError(
+                "Interval doesn't belong to any category: {}".format(no_category_list)
+            )
+
+        if len(ambiguous_list) > 0:
+            raise ValueError(
+                "Interval has tags belonging to different categories: {}".format(
+                    ambiguous_list
+                )
+            )
+
+        return {
+            c: [i for i in list_of_intervals if c in interval_categories[i.__repr__()]]
+            for c in all_categories
+            if c
+        }
 
     def items(self):
         return self.__items
@@ -61,8 +69,15 @@ class ItemCategory(object):
         self.line_items = []
 
         for day, intervals in sorted(intervals_by_day.items(), key=lambda x: x[0]):
-            self.line_items.append(LineItem(day, sum([interval.get_duration() for interval
-                in intervals], timedelta()), unit_price))
+            self.line_items.append(
+                LineItem(
+                    day,
+                    sum(
+                        [interval.get_duration() for interval in intervals], timedelta()
+                    ),
+                    unit_price,
+                )
+            )
 
     def __str__(self):
         return "".join(

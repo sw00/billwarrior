@@ -75,3 +75,12 @@ class BillWarriorConfigTest(unittest.TestCase):
         for category_name, tags in expected.items():
             for tag in tags:
                 self.assertEqual(config.category_of(tag), category_name)
+
+    def test_category_of_should_return_None_when_tag_has_no_category(self):
+        with patch("builtins.open", mock_open(read_data=self.raw_file_data)):
+            config = BillWarriorConfig()
+
+        category = config.category_of('unmapped tag')
+        self.assertIsNone(category)
+        
+

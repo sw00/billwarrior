@@ -45,11 +45,7 @@ class InvoiceTest(unittest.TestCase):
         items = invoice.items()
 
         expected_a, expected_b = (
-            ItemCategory(
-                "Consulting & Research",
-                {a.get_date().date(): [a]},
-                0.0,
-            ),
+            ItemCategory("Consulting & Research", {a.get_date().date(): [a]}, 0.0),
             ItemCategory("Travel", {b.get_date().date(): [b]}, 0.0),
         )
 
@@ -94,15 +90,10 @@ class InvoiceTest(unittest.TestCase):
 
         billw_config = BillWarriorConfigFake.build(tag_mapping)
 
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaisesRegex(
+            ValueError, "Interval has tags belonging to different categories: ."
+        ) as e:
             Invoice([a, b], billw_config)
-
-        self.assertEqual(
-            str(e.exception),
-            "Interval has tags belonging to different categories: {}".format(
-                ["flight", "videocall"]
-            ),
-        )
 
     def test_raises_exception_when_an_interval_does_not_belong_to_any_category(self):
         a, b = (
@@ -114,12 +105,10 @@ class InvoiceTest(unittest.TestCase):
             {"flight": "Travel", "coding": "Software Development"}
         )
 
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaisesRegex(
+            ValueError, "Interval doesn't belong to any category: ."
+        ) as e:
             Invoice([a, b], billw_config)
-
-        self.assertEqual(
-            str(e.exception), "Interval doesn't belong to any category: {}".format(a)
-        )
 
     def test_sets_unit_price_for_item_category(self):
         a, b = (
@@ -182,8 +171,10 @@ class InvoiceTest(unittest.TestCase):
         )
 
         invoice = Invoice([a, b], billw_config)
+        printed_invoice = str(invoice)
 
-        self.assertEqual(str(invoice), "\n".join([str(expected_a), str(expected_b)]))
+        self.assertIn(str(expected_a), printed_invoice)
+        self.assertIn(str(expected_b), printed_invoice)
 
 
 class ItemCategoryTest(unittest.TestCase):
@@ -192,10 +183,11 @@ class ItemCategoryTest(unittest.TestCase):
         self.assertEqual(category.header, "Unclean tag name")
 
     def test_line_items_should_be_populated_with_entries_per_day(self):
+        a_day = datetime.today()
         entries = [
-            [tests.give_interval()],
-            [tests.give_interval()],
-            [tests.give_interval()],
+            [tests.give_interval(a_day + timedelta(days=1))],
+            [tests.give_interval(a_day + timedelta(days=2))],
+            [tests.give_interval(a_day + timedelta(days=3))],
         ]
         intervals_by_day = {entry[0].get_date().date(): entry for entry in entries}
 
