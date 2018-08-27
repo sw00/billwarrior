@@ -90,7 +90,8 @@ class InvoiceTest(unittest.TestCase):
         billw_config = BillWarriorConfigFake.build(tag_mapping)
 
         with self.assertRaisesRegex(
-            ValueError, "Interval has tags belonging to different categories: ."
+            ValueError,
+            "Intervals with the following tags belongs to more than one category: .",
         ) as e:
             Invoice([a, b], billw_config)
 
@@ -105,7 +106,8 @@ class InvoiceTest(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(
-            ValueError, "Interval doesn't belong to any category: ."
+            ValueError,
+            "These intervals with the following tags don't belong to any category: .",
         ) as e:
             Invoice([a, b], billw_config)
 

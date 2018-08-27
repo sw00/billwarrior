@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from timewreport.interval import TimeWarriorInterval
+
 
 class Invoice(object):
     def __init__(self, intervals, config):
@@ -27,7 +29,7 @@ class Invoice(object):
         all_categories = set([c for c in tag_mapping.values()])
 
         interval_categories = {
-            i.__repr__(): set(
+            IntervalContainer(i): set(
                 [tag_mapping[t] for t in i.get_tags() if tag_mapping.get(t, None)]
             )
             for i in list_of_intervals
@@ -38,18 +40,20 @@ class Invoice(object):
 
         if len(no_category_list) > 0:
             raise ValueError(
-                "Interval doesn't belong to any category: {}".format(no_category_list)
+                "These intervals with the following tags don't belong to any category: {}".format(
+                    [i.get_tags() for i in no_category_list]
+                )
             )
 
         if len(ambiguous_list) > 0:
             raise ValueError(
-                "Interval has tags belonging to different categories: {}".format(
-                    ambiguous_list
+                "Intervals with the following tags belongs to more than one category: {}".format(
+                    [i.get_tags() for i in ambiguous_list]
                 )
             )
 
         return {
-            c: [i for i in list_of_intervals if c in interval_categories[i.__repr__()]]
+            c: [i for i in list_of_intervals if c in interval_categories[i]]
             for c in all_categories
             if c
         }
@@ -59,6 +63,18 @@ class Invoice(object):
 
     def __str__(self):
         return "\n".join([str(item) for item in self.__items])
+
+
+class IntervalContainer(TimeWarriorInterval):
+    def __new__(cls, interval):
+        interval.__class__ = cls
+        return interval
+
+    def __init__(self, interval):
+        pass
+
+    def __hash__(self):
+        return hash(repr(self))
 
 
 class ItemCategory(object):
