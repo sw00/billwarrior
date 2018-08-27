@@ -18,7 +18,7 @@ class Invoice(object):
             }
 
             self.__items.append(
-                ItemCategory(category, intervals_by_day, config.rate_for(category))
+                ItemCategory(config.text_for(category), intervals_by_day, config.rate_for(category))
             )
 
     def _sort_by_category(self, list_of_intervals):
