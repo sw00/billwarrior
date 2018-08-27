@@ -8,7 +8,6 @@ from timewreport.interval import TimeWarriorInterval
 import tests.testsupport as tests
 from billwarrior.config import BillWarriorConfig
 from billwarrior.invoice import Invoice, ItemCategory, LineItem
-from billwarrior.records import DayEntry
 
 
 class BillWarriorConfigFake(BillWarriorConfig):
