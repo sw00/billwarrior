@@ -59,10 +59,17 @@ cd ~/.config/billwarrior/latex && pdflatex invoice.tex
 ```
 
 Additional Notes
-------
+----------------
 * It's up to you to customise the LaTeX template (`invoice.tex` and `invoice.cls`).
 
 * Billwarrior is strict. It won't run if it encounters a time interval with tags that
   isn't configured to map to a category in `billwarrior.ini`. So make sure you give
   `timew` the appropriate filters.
 
+TODO
+-----
+[ ] Make line items' LaTeX output configurable.
+
+[ ] Smarter `setup.py install` to detect Timewarrior extensions path and install itself.
+
+[ ] Upload/distribute to the cheese shop and support installation via `pip install`
