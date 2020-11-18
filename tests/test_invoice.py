@@ -16,6 +16,9 @@ class BillWarriorConfigFake(BillWarriorConfig):
 
     @classmethod
     def build(cls, tag_mapping={}, rate_mapping={}):
+        def fake_text_for(category):
+            return category
+
         def fake_category_of(tag):
             return tag_mapping.get(tag, None)
 
@@ -23,6 +26,7 @@ class BillWarriorConfigFake(BillWarriorConfig):
             return rate_mapping.get(category, 0.0)
 
         billw_config = cls()
+        billw_config.text_for = mock.MagicMock(side_effect=fake_text_for)
         billw_config.category_of = mock.MagicMock(side_effect=fake_category_of)
         billw_config.rate_for = mock.MagicMock(side_effect=fake_rate_for)
 
@@ -49,8 +53,8 @@ class InvoiceTest(unittest.TestCase):
         )
 
         self.assertEqual(len(items), 2)
-        self.assertIn(str(expected_a), [str(item) for item in items])
-        self.assertIn(str(expected_b), [str(item) for item in items])
+        self.assertEqual(str(expected_a), str(items[0]))
+        self.assertEqual(str(expected_b), str(items[1]))
 
     def test_groups_intervals_of_same_category(self):
         same_day = datetime.today()
@@ -142,8 +146,42 @@ class InvoiceTest(unittest.TestCase):
         )
 
         self.assertEqual(len(items), 2)
-        self.assertIn(str(expected_a), [str(item) for item in items])
-        self.assertIn(str(expected_b), [str(item) for item in items])
+        self.assertEqual(str(expected_a), str(items[0]))
+        self.assertEqual(str(expected_b), str(items[1]))
+
+    def test_alpha_orders_categories(self):
+        a, b = (
+            tests.give_interval(tags=["meeting"]),
+            tests.give_interval(tags=["coding", "stories"]),
+        )
+
+        category_a = "Consulting & Research"
+        category_b = "Software Development"
+
+        billw_config = BillWarriorConfigFake.build(
+            {"coding": category_b, "meeting": category_a},
+            {category_a: 12.02, category_b: 9.34},
+        )
+
+        invoice = Invoice([b, a], billw_config)
+        items = invoice.items()
+
+        expected_a, expected_b = (
+            ItemCategory(
+                "Consulting & Research",
+                {a.get_date().date(): [a]},
+                billw_config.rate_for(category_a),
+            ),
+            ItemCategory(
+                "Software Development",
+                {b.get_date().date(): [b]},
+                billw_config.rate_for(category_b),
+            ),
+        )
+
+        self.assertEqual(len(items), 2)
+        self.assertEqual(str(expected_a), str(items[0]))
+        self.assertEqual(str(expected_b), str(items[1]))
 
     def test_prints_invoice_categories_and_items(self):
         a, b = (
