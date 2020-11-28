@@ -120,13 +120,9 @@ class LineItem(object):
     @property
     def duration(self):
         totsec = self.__duration.total_seconds()
-        h = totsec // 3600
-        m = (totsec % 3600) // 60
-        s = (totsec % 3600) % 60
+        hours = totsec / 3600.0
 
-        total = h + (m / 60) + (s / 6000)
-
-        return "{:.2f}".format(total)
+        return "{:.2f}".format(hours)
 
     @property
     def unit_price(self):
