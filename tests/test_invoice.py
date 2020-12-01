@@ -285,16 +285,12 @@ class LineItemTest(unittest.TestCase):
 
     def test_duration_should_display_decimal_value_of_hours_worked(self):
         duration = timedelta(
-            hours=randint(0, 8), minutes=randint(0, 59), seconds=randint(0, 59)
+            hours=8, minutes=51, seconds=59
         )
         line_item = LineItem(datetime.today(), duration, None)
 
         totsec = duration.total_seconds()
-        total = (
-            totsec // 3600
-            + (((totsec % 3600) // 60) / 60)
-            + (((totsec % 3600) % 60) / 6000)
-        )
+        total = totsec / 3600.0
 
         self.assertEqual(line_item.duration, "{:.1f}".format(total))
 
