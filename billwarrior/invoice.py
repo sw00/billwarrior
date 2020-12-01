@@ -126,7 +126,7 @@ class LineItem(object):
 
         total = h + (m / 60) + (s / 6000)
 
-        return "{:.2f}".format(total)
+        return "{:.1f}".format(round(total, 1))
 
     @property
     def unit_price(self):

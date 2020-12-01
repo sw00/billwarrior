@@ -47,38 +47,37 @@
 \newcounter{hours} \newcounter{subhours} \newcounter{cost} \newcounter{subcost}
 \setcounter{hours}{0} \setcounter{subhours}{0} \setcounter{cost}{0} \setcounter{subcost}{0}
 
-% Formats inputed number with 2 digits after the decimal place
-\newcommand*{\formatNumber}[1]{\FPround{\cost}{#1}{2}\cost} %
+% Formats inputed dollars or hours with digits after the decimal place
+\newcommand*{\formatDollars}[1]{\FPround{\cost}{#1}{2}\cost} %
+\newcommand*{\formatHours}[1]{\FPround{\cost}{#1}{1}\cost} %
 
 % Returns the total of counter
-\newcommand*{\total}[1]{\FPdiv{\t}{\arabic{#1}}{1000}\formatNumber{\t}}
+\newcommand*{\totalDollars}[1]{\FPdiv{\t}{\arabic{#1}}{1000000}\formatDollars{\t}}
+\newcommand*{\totalHours}[1]{\FPdiv{\t}{\arabic{#1}}{1000000}\formatHours{\t}}
 
 % Create an invoice table
 \newenvironment{invoiceTable}{
     % Create a new row from title, unit quantity, unit rate, and unit name
     \newcommand*{\unitrow}[4]{%
-         \addtocounter{cost}{1000 * \real{##2} * \real{##3}}%
-         \addtocounter{subcost}{1000 * \real{##2} * \real{##3}}%
-         ##1 & \formatNumber{##2} ##4 & \$\formatNumber{##3} & \$\FPmul{\cost}{##2}{##3}\formatNumber{\cost}%
+         \addtocounter{cost}{1000000 * \real{##2} * \real{##3}}%
+         \addtocounter{subcost}{1000000 * \real{##2} * \real{##3}}%
+         ##1 & \formatHours{##2} ##4 & \$\formatDollars{##3} & \$\FPmul{\cost}{##2}{##3}\formatDollars{\cost}%
          \\
     }
     % Create a new row from title and expense amount
     \newcommand*{\feerow}[2]{%
-         \addtocounter{cost}{1000 * \real{##2}}%
-         \addtocounter{subcost}{1000 * \real{##2}}%
-         ##1 & & \$\formatNumber{##2} & \$\FPmul{\cost}{##2}{1}\formatNumber{\cost}%
+         \addtocounter{cost}{1000000 * \real{##2}}%
+         \addtocounter{subcost}{1000000 * \real{##2}}%
+         ##1 & & \$\formatHours{##2} & \$\FPmul{\cost}{##2}{1}\formatDollars{\cost}%
          \\
     }
 
     \newcommand{\subtotalNoStar}{
-        {\bf Subtotal} & {\bf \total{subhours} hours} &  & {\bf \$\total{subcost}}
-        \setcounter{subcost}{0}
-        \setcounter{subhours}{0}
+        Subtotal & \totalHours{subhours} hours &  & \$\totalDollars{subcost}\setcounter{subcost}{0}\setcounter{subhours}{0}
         \\*[1.5ex]
     }
     \newcommand{\subtotalStar}{
-        {\bf Subtotal} & & & {\bf \$\total{subcost}}
-        \setcounter{subcost}{0}
+        Subtotal & & & \$\totalHours{subcost}\setcounter{subcost}{0}
         \\*[1.5ex]
     }
     \newcommand{\subtotal}{
@@ -90,8 +89,8 @@
 
     % Create a new row from date and hours worked (use stored fee type and hourly rate)
     \newcommand*{\hourrow}[3]{%
-        \addtocounter{hours}{1000 * \real{##2}}%
-        \addtocounter{subhours}{1000 * \real{##2}}%
+        \addtocounter{hours}{1000000 * \real{##2}}%
+        \addtocounter{subhours}{1000000 * \real{##2}}%
         \unitrow{##1}{##2}{##3}{hours}%
     }
     \renewcommand{\tabcolsep}{0.8ex}
@@ -104,6 +103,6 @@
     \endhead
 }{
     \hline\hline\hline
-    {\bf Balance Due} & & & {\bf \$\total{cost}} \\
+    {\bf Balance Due} & & & {\bf \$\totalDollars{cost}} \\
     \end{longtable}
 }
