@@ -66,6 +66,16 @@ Additional Notes
   isn't configured to map to a category in `billwarrior.ini`. So make sure you give
   `timew` the appropriate filters.
 
+Tests
+-----
+
+The timezone must be fixed for the tests to pass.
+For example,
+
+```shell
+$ env TZ=Europe/Paris pytest
+```
+
 TODO
 -----
 [ ] Make line items' LaTeX output configurable.
