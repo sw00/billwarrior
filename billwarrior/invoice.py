@@ -80,10 +80,14 @@ class IntervalContainer(TimeWarriorInterval):
 
 class ItemCategory(object):
     def __init__(self, tag_name, intervals_by_day, unit_price):
+        self.unit_price = unit_price
         self.header = (
             " ".join([x for x in tag_name.split() if not x == ""]).strip().capitalize()
         )
         self.line_items = []
+
+        if unit_price < 0:
+            return
 
         for day, intervals in sorted(intervals_by_day.items(), key=lambda x: x[0]):
             self.line_items.append(
@@ -97,6 +101,8 @@ class ItemCategory(object):
             )
 
     def __str__(self):
+        if self.unit_price < 0:
+            return ""
         return "".join(
             [
                 "\\feetype{%s}\n" % self.header,
