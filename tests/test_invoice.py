@@ -1,8 +1,9 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from unittest import mock
 
+import pytest
 from timewreport.interval import TimeWarriorInterval
 
 import tests.testsupport as tests
@@ -56,6 +57,7 @@ class InvoiceTest(unittest.TestCase):
         self.assertEqual(str(expected_a), str(items[0]))
         self.assertEqual(str(expected_b), str(items[1]))
 
+    @pytest.mark.freeze_time(tz_offset=2)
     def test_groups_intervals_of_same_category(self):
         same_day = datetime.today()
         a, b, c = (
