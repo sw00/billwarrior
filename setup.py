@@ -13,7 +13,7 @@ def readme():
 
 setup(
     name="billwarrior",
-    version="0.1.0",
+    version="0.1.1",
     description="A Timewarrior report extension for creating invoices in LaTeX.",
     long_description=readme(),
     classifiers=[
