@@ -40,6 +40,9 @@ consulting.rate = 85.50
 nonbillable.tags = pingpong, travel, lunch
 nonbillable.text = Nonbillable Time
 nonbillable.rate = 0.0
+
+invisible.tags = invisible
+invisible.rate = -1
 ```
 
 1. Copy the `bin/billwarrior` script into your Timewarrior extensions directory and ensure
@@ -66,10 +69,13 @@ Additional Notes
   isn't configured to map to a category in `billwarrior.ini`. So make sure you give
   `timew` the appropriate filters.
 
-TODO
+TODO/Issues
 -----
-[ ] Make line items' LaTeX output configurable.
 
-[ ] Smarter `setup.py install` to detect Timewarrior extensions path and install itself.
+- [ ] Automated build (GH Actions).
 
-[ ] Upload/distribute to the cheese shop and support installation via `pip install`
+- [ ] Make line items' LaTeX output configurable.
+
+- [ ] Smarter `setup.py install` to detect Timewarrior extensions path and install itself.
+
+- [ ] Upload/distribute to the cheese shop and support installation via `pip install`
