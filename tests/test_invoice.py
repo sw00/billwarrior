@@ -223,6 +223,10 @@ class ItemCategoryTest(unittest.TestCase):
         category = ItemCategory(" unclean tag   name ", {}, 0.0)
         self.assertEqual(category.header, "Unclean tag name")
 
+    def test_items_omitted_when_unit_price_is_negative(self):
+        category = ItemCategory("invisible work", {}, -1)
+        self.assertEqual(str(category), "")
+
     def test_line_items_should_be_populated_with_entries_per_day(self):
         a_day = datetime.today()
         entries = [
