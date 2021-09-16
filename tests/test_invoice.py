@@ -1,3 +1,6 @@
+import contextlib
+import os
+import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from random import randint
@@ -9,6 +12,21 @@ from timewreport.interval import TimeWarriorInterval
 import tests.testsupport as tests
 from billwarrior.config import BillWarriorConfig
 from billwarrior.invoice import Invoice, ItemCategory, LineItem
+
+
+@contextlib.contextmanager
+def mock_tz(new_tz):
+    old_tz = os.environ.get('TZ')
+    os.environ['TZ'] = new_tz
+    time.tzset()
+    try:
+        yield
+    finally:
+        if old_tz is not None:
+            os.environ['TZ'] = old_tz
+        else:
+            del os.environ['TZ']
+        time.tzset()
 
 
 class BillWarriorConfigFake(BillWarriorConfig):
@@ -57,28 +75,28 @@ class InvoiceTest(unittest.TestCase):
         self.assertEqual(str(expected_a), str(items[0]))
         self.assertEqual(str(expected_b), str(items[1]))
 
-    @pytest.mark.freeze_time(tz_offset=2)
     def test_groups_intervals_of_same_category(self):
-        same_day = datetime.today()
-        a, b, c = (
-            tests.give_interval(same_day, tags=["on-site", "coding"]),
-            tests.give_interval(same_day, tags=["coding", "off-site"]),
-            tests.give_interval(tags=["coding", "cafe"]),
-        )
+        with mock_tz('UTC'):
+            same_day = datetime.today()
+            a, b, c = (
+                tests.give_interval(same_day, tags=["on-site", "coding"]),
+                tests.give_interval(same_day, tags=["coding", "off-site"]),
+                tests.give_interval(tags=["coding", "cafe"]),
+            )
 
-        billw_config = BillWarriorConfigFake.build({"coding": "Consulting & Research"})
+            billw_config = BillWarriorConfigFake.build({"coding": "Consulting & Research"})
 
-        invoice = Invoice([a, b, c], billw_config)
-        items = invoice.items()
+            invoice = Invoice([a, b, c], billw_config)
+            items = invoice.items()
 
-        expected = ItemCategory(
-            "Consulting & Research",
-            {same_day.date(): [a, b], c.get_date().date(): [c]},
-            0.0,
-        )
+            expected = ItemCategory(
+                "Consulting & Research",
+                {same_day.date(): [a, b], c.get_date().date(): [c]},
+                0.0,
+            )
 
-        self.assertEqual(len(items), 1)  # one category
-        self.assertEqual(str(items[0]), str(expected))
+            self.assertEqual(len(items), 1)  # one category
+            self.assertEqual(str(items[0]), str(expected))
 
     def test_raises_exception_when_interval_sorts_into_more_than_one_category(self):
         a, b = (
@@ -228,17 +246,18 @@ class ItemCategoryTest(unittest.TestCase):
         self.assertEqual(str(category), "")
 
     def test_line_items_should_be_populated_with_entries_per_day(self):
-        a_day = datetime.today()
-        entries = [
-            [tests.give_interval(a_day + timedelta(days=1))],
-            [tests.give_interval(a_day + timedelta(days=2))],
-            [tests.give_interval(a_day + timedelta(days=3))],
-        ]
-        intervals_by_day = {entry[0].get_date().date(): entry for entry in entries}
+        with mock_tz('UTC'):
+            a_day = datetime.today()
+            entries = [
+                [tests.give_interval(a_day + timedelta(days=1))],
+                [tests.give_interval(a_day + timedelta(days=2))],
+                [tests.give_interval(a_day + timedelta(days=3))],
+            ]
+            intervals_by_day = {entry[0].get_date().date(): entry for entry in entries}
 
-        category = ItemCategory("arbitray category", intervals_by_day, 0.0)
+            category = ItemCategory("arbitray category", intervals_by_day, 0.0)
 
-        self.assertEqual(len(category.line_items), len(entries))
+            self.assertEqual(len(category.line_items), len(entries))
 
     def test_line_items_should_be_sorted_by_date(self):
         entries = [
