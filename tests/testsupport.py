@@ -14,4 +14,4 @@ def give_interval(day=None, tags=[]):
 
     end = start + timedelta(0, randint(60 * 5, 60 * 60 * 2))  # up to 2h
 
-    return TimeWarriorInterval(start.strftime(DT_FORMAT), end.strftime(DT_FORMAT), tags)
+    return TimeWarriorInterval(start.strftime(DT_FORMAT), end.strftime(DT_FORMAT), tags, None)

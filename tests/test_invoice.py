@@ -67,8 +67,8 @@ class InvoiceTest(unittest.TestCase):
         items = invoice.items()
 
         expected_a, expected_b = (
-            ItemCategory("Consulting & Research", {a.get_date().date(): [a]}, 0.0),
-            ItemCategory("Travel", {b.get_date().date(): [b]}, 0.0),
+            ItemCategory("Consulting & Research", {a.get_start_date(): [a]}, 0.0),
+            ItemCategory("Travel", {b.get_start_date(): [b]}, 0.0),
         )
 
         self.assertEqual(len(items), 2)
@@ -91,7 +91,7 @@ class InvoiceTest(unittest.TestCase):
 
             expected = ItemCategory(
                 "Consulting & Research",
-                {same_day.date(): [a, b], c.get_date().date(): [c]},
+                {same_day.date(): [a, b], c.get_start_date(): [c]},
                 0.0,
             )
 
@@ -155,12 +155,12 @@ class InvoiceTest(unittest.TestCase):
         expected_a, expected_b = (
             ItemCategory(
                 "Consulting & Research",
-                {a.get_date().date(): [a]},
+                {a.get_start_date(): [a]},
                 billw_config.rate_for(category_a),
             ),
             ItemCategory(
                 "Software Development",
-                {b.get_date().date(): [b]},
+                {b.get_start_date(): [b]},
                 billw_config.rate_for(category_b),
             ),
         )
@@ -189,12 +189,12 @@ class InvoiceTest(unittest.TestCase):
         expected_a, expected_b = (
             ItemCategory(
                 "Consulting & Research",
-                {a.get_date().date(): [a]},
+                {a.get_start_date(): [a]},
                 billw_config.rate_for(category_a),
             ),
             ItemCategory(
                 "Software Development",
-                {b.get_date().date(): [b]},
+                {b.get_start_date(): [b]},
                 billw_config.rate_for(category_b),
             ),
         )
@@ -219,12 +219,12 @@ class InvoiceTest(unittest.TestCase):
         expected_a, expected_b = (
             ItemCategory(
                 "Consulting & Research",
-                {a.get_date().date(): [a]},
+                {a.get_start_date(): [a]},
                 billw_config.rate_for(category_a),
             ),
             ItemCategory(
                 "Software Development",
-                {b.get_date().date(): [b]},
+                {b.get_start_date(): [b]},
                 billw_config.rate_for(category_b),
             ),
         )
@@ -253,7 +253,7 @@ class ItemCategoryTest(unittest.TestCase):
                 [tests.give_interval(a_day + timedelta(days=2))],
                 [tests.give_interval(a_day + timedelta(days=3))],
             ]
-            intervals_by_day = {entry[0].get_date().date(): entry for entry in entries}
+            intervals_by_day = {entry[0].get_start_date(): entry for entry in entries}
 
             category = ItemCategory("arbitray category", intervals_by_day, 0.0)
 
@@ -265,11 +265,11 @@ class ItemCategoryTest(unittest.TestCase):
             [tests.give_interval()],
             [tests.give_interval()],
         ]
-        dates = [entry[0].get_date().date() for entry in entries]
+        dates = [entry[0].get_start_date() for entry in entries]
 
         category = ItemCategory("arbitray category", dict(zip(dates, entries)), 0.0)
 
-        sorted_date_list = sorted([entry[0].get_date().date() for entry in entries])
+        sorted_date_list = sorted([entry[0].get_start_date() for entry in entries])
         self.assertListEqual(
             [
                 datetime.strptime(line_item.date, "%B %d, %Y").date()
@@ -280,7 +280,7 @@ class ItemCategoryTest(unittest.TestCase):
 
     def test_str_should_display_header_line_items_and_subtotal_as_latex_output(self):
         a, b = tests.give_interval(), tests.give_interval()
-        entries = {a.get_date().date(): [a], b.get_date().date(): [b]}
+        entries = {a.get_start_date(): [a], b.get_start_date(): [b]}
 
         category = ItemCategory("arbitrary category", entries, 0.0)
 
@@ -289,8 +289,8 @@ class ItemCategoryTest(unittest.TestCase):
                 "\\feetype{%s}\n" % category.header,
                 "".join(
                     [
-                        "%s\n" % LineItem(i.get_date(), i.get_duration(), 0.0)
-                        for i in sorted([a, b], key=lambda x: x.get_date())
+                        "%s\n" % LineItem(i.get_start_date(), i.get_duration(), 0.0)
+                        for i in sorted([a, b], key=lambda x: x.get_start_date())
                     ]
                 ),
                 "\\subtotal\n",
