@@ -12,9 +12,9 @@ class Invoice(object):
 
         for category in sorted(sorted_intervals.keys(), key=config.text_for):
             intervals = sorted_intervals[category]
-            days = set([interval.get_date().date() for interval in intervals])
+            days = set([interval.get_start_date() for interval in intervals])
             intervals_by_day = {
-                day: [i for i in intervals if i.get_date().date() == day]
+                day: [i for i in intervals if i.get_start_date() == day]
                 for day in days
             }
 
